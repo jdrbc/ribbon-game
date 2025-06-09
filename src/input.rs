@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use avian3d::prelude::*;
 use crate::components::*;
 use crate::{GameState};
+// Temporarily commented out GGRS imports
+// use bevy_ggrs::{ggrs::PlayerHandle, LocalInputs, LocalPlayers};
 
 pub struct InputPlugin;
 
@@ -9,12 +11,14 @@ impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
         app
             .add_systems(Update, (
-                gather_input.run_if(in_state(GameState::InGame)),
-                process_local_input.run_if(in_state(GameState::InGame)),
+                gather_input.run_if(in_state(GameState::SinglePlayer)),
+                process_local_input.run_if(in_state(GameState::SinglePlayer)),
             ));
     }
 }
 
+// This function is responsible for collecting input for the local player
+// in a single-player context. It's not used for networked games.
 pub fn gather_input(
     keyboard_input: Res<ButtonInput<KeyCode>>,
     mut local_input_query: Query<&mut NetworkInput, With<LocalPlayer>>,
@@ -48,6 +52,22 @@ pub fn gather_input(
     }
 }
 
+// This is for GGRS. It reads the local player's input and returns it
+// for GGRS to handle. This is the real deal for multiplayer.
+// TODO: Implement proper GGRS input system
+/*
+pub fn read_local_inputs(
+    mut commands: Commands,
+    keys: Res<ButtonInput<KeyCode>>,
+    local_players: Res<bevy_ggrs::LocalPlayers>,
+) {
+    // Implementation will be added later when GGRS input system is fixed
+}
+*/
+
+// This processes the local input for the single-player mode. It directly
+// applies forces to the player character. In multiplayer, the server-side
+// logic (or in our case, GGRS) would handle this.
 pub fn process_local_input(
     input_query: Query<&NetworkInput, With<LocalPlayer>>,
     mut player_query: Query<(&mut Player, &mut ExternalImpulse, &Transform), With<LocalPlayer>>,

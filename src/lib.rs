@@ -20,6 +20,7 @@ pub enum GameState {
     Lobby,
     InGame,
     GameOver,
+    SinglePlayer,
 }
 
 pub struct RibbonGamePlugin;

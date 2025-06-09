@@ -221,6 +221,30 @@ pub fn main_menu_ui(
                     );
                 });
             });
+
+            if ui.button("Join Game").clicked() && !connection_info.room_id.is_empty() {
+                lobby_state.room_id = Some(connection_info.room_id.clone());
+                lobby_state.is_host = false;
+                lobby_state.max_players = 4;
+                lobby_state.player_count = 1;
+                game_state.set(GameState::Lobby);
+            }
+
+            ui.add_space(20.0);
+
+            // Single Player (for development/testing)
+            // A quick note from your friendly neighborhood Bespoke developer:
+            // This is for testing only. Don't get any funny ideas about
+            // shipping a single-player mode without talking to us first.
+            if ui.button("Single Player (Dev)").clicked() {
+                game_state.set(GameState::SinglePlayer);
+            }
+
+            // Display connection errors
+            if let Some(error) = &connection_info.connection_error {
+                ui.add_space(20.0);
+                ui.colored_label(egui::Color32::RED, format!("Error: {}", error));
+            }
         });
 }
 
