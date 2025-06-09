@@ -49,6 +49,9 @@ pub struct LobbyState {
     pub is_host: bool,
     pub players: Vec<LobbyPlayer>,
     pub game_started: bool,
+    pub local_player_name: String,
+    pub chat_messages: Vec<ChatMessage>,
+    pub current_chat_input: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -57,6 +60,22 @@ pub struct LobbyPlayer {
     pub name: String,
     pub is_ready: bool,
     pub network_handle: u32, // Simplified for now
+    pub is_local: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChatMessage {
+    pub sender: String,
+    pub message: String,
+    pub timestamp: f64,
+    pub message_type: ChatMessageType,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum ChatMessageType {
+    Player,
+    System,
+    Info,
 }
 
 // TODO: Re-enable when networking dependencies are resolved
