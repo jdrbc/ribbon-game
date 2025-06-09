@@ -42,8 +42,35 @@ pub struct LobbyState {
     pub connected_players: Vec<String>,
     pub is_host: bool,
     pub player_count: usize,
-    pub players: Vec<String>,
+    pub players: Vec<LobbyPlayer>,
     pub game_started: bool,
+    pub local_player_name: String,
+    pub chat_messages: Vec<ChatMessage>,
+    pub current_chat_input: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct LobbyPlayer {
+    pub id: Uuid,
+    pub name: String,
+    pub is_ready: bool,
+    pub network_handle: u32, // Simplified for now
+    pub is_local: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct ChatMessage {
+    pub sender: String,
+    pub message: String,
+    pub timestamp: f64,
+    pub message_type: ChatMessageType,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ChatMessageType {
+    Player,
+    System,
+    Info,
 }
 
 impl Default for LobbyState {
@@ -56,6 +83,9 @@ impl Default for LobbyState {
             player_count: 0,
             players: Vec::new(),
             game_started: false,
+            local_player_name: "Player".to_string(),
+            chat_messages: Vec::new(),
+            current_chat_input: String::new(),
         }
     }
 }

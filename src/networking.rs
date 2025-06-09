@@ -6,6 +6,7 @@ use bevy_ggrs::{
 };
 use bevy_matchbox::prelude::*;
 use serde::{Deserialize, Serialize};
+use uuid;
 
 use crate::components::*;
 // use crate::input::read_local_inputs;
@@ -111,10 +112,28 @@ pub fn wait_for_players(
     lobby_state.connected_players = players.iter().map(|p| format!("Player_{}", p)).collect();
     
     // Update the players list that the UI displays
+    let is_host = lobby_state.is_host;
+    let local_player_name = lobby_state.local_player_name.clone();
+    
     lobby_state.players.clear();
-    lobby_state.players.push("Host".to_string()); // Add the host/local player
+    // Add the local/host player first
+    lobby_state.players.push(crate::resources::LobbyPlayer {
+        id: uuid::Uuid::new_v4(),
+        name: if is_host { "Host".to_string() } else { local_player_name },
+        is_ready: false,
+        network_handle: 0,
+        is_local: true,
+    });
+    
+    // Add remote players
     for (i, _player) in players.iter().enumerate() {
-        lobby_state.players.push(format!("Player_{}", i + 2)); // Start from Player_2
+        lobby_state.players.push(crate::resources::LobbyPlayer {
+            id: uuid::Uuid::new_v4(),
+            name: format!("Player_{}", i + 2),
+            is_ready: false,
+            network_handle: (i + 1) as u32,
+            is_local: false,
+        });
     }
 
     info!("Players connected: {}/{}", current_player_count, lobby_state.max_players);
