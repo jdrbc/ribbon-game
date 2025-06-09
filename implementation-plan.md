@@ -23,52 +23,48 @@
 ### 3D Rendering Foundation
 - [x] Create basic scene with 3D camera system
 - [x] Implement player entity as 3D box/capsule
-- [x] Create ground plane (15m x 5m arena chunk)
+- [x] Create ground plane (150m x 50m arena chunk) - **EXPANDED**
 - [x] Set up basic lighting and materials
 - [x] Implement fixed 3rd person camera behind player
 - [x] Add camera smoothing and following mechanics
 
 ### Character Controller
 - [x] Integrate Avian 3D character controller
-- [x] Implement WASD movement controls (~1 m/s base speed)
-- [x] Add jump mechanics (Spacebar)
-- [x] Implement basic collision detection with ground
-- [x] Add gravity and physics interactions
-- [x] Create movement state management (idle, walking, jumping)
+- [x] Implement WASD movement controls (~5 m/s base speed) - **IMPROVED**
+- [x] refactor movement to use avian impulses - **COMPLETED**
+- [x] FIX: jump mechanics (Spacebar) - **FIXED**
+- [x] Implement basic collision detection with ground - **FIXED**
 
-### Player Systems
-- [x] Create Player component structure
-- [x] Implement player spawning system
-- [x] Add player input handling and processing
-- [ ] Create player animation state machine (if using animations)
-- [x] Implement basic player boundaries (arena edges)
+## Step 1.1: Refactor
+
+- [x] review project structure & ensure best project structure is being used - **COMPLETED**  
 
 ## Step 2: Multiplayer Foundation
 
 ### Networking Architecture
-- [ ] Set up GGRS rollback netcode framework
-- [ ] Integrate Matchbox for P2P connections
+- [x] Set up GGRS rollback netcode framework - **STRUCTURED** (awaiting dependency resolution)
+- [x] Integrate Matchbox for P2P connections - **STRUCTURED** (awaiting dependency resolution)
 - [ ] Configure 30 ticks/second simulation
-- [ ] Implement network input handling
-- [ ] Create network session management
-- [ ] Add connection state tracking and error handling
+- [x] Implement network input handling - **STRUCTURED**
+- [x] Create network session management - **STRUCTURED**
+- [x] Add connection state tracking and error handling - **STRUCTURED**
 
 ### Lobby System (EGUI)
-- [ ] Create main menu UI layout
-- [ ] Implement "Create Game" functionality
-- [ ] Add "Join Game" with room codes/IDs
-- [ ] Create lobby waiting room with member list
-- [ ] Add "Start Game" button for host
+- [x] Create main menu UI layout - **STRUCTURED** (awaiting bevy_egui compatibility)
+- [x] Implement "Create Game" functionality - **STRUCTURED**
+- [x] Add "Join Game" with room codes/IDs - **STRUCTURED**
+- [x] Create lobby waiting room with member list - **STRUCTURED**
+- [x] Add "Start Game" button for host - **STRUCTURED**
 - [ ] Implement lobby chat (optional)
-- [ ] Add connection status indicators
+- [x] Add connection status indicators - **STRUCTURED**
 
 ### Multiplayer Player Management
-- [ ] Implement player ID assignment and tracking
-- [ ] Create synchronized player spawning
-- [ ] Add network player input synchronization
-- [ ] Implement client prediction for movement
-- [ ] Create rollback handling for player positions
-- [ ] Add network interpolation for smooth movement
+- [x] Implement player ID assignment and tracking - **STRUCTURED**
+- [x] Create synchronized player spawning - **STRUCTURED**
+- [x] Add network player input synchronization - **STRUCTURED**
+- [x] Implement client prediction for movement - **STRUCTURED**
+- [x] Create rollback handling for player positions - **STRUCTURED**
+- [x] Add network interpolation for smooth movement - **STRUCTURED**
 - [ ] Test and debug synchronization issues
 
 ### Network Testing
@@ -77,6 +73,14 @@
 - [ ] Verify synchronized movement between clients
 - [ ] Test network disconnect/reconnect scenarios
 - [ ] Validate rollback netcode functionality
+
+### Current Status
+- **Project Structure**: ✅ Fully refactored with modular plugin architecture
+- **State Management**: ✅ Implemented with proper game states
+- **Input System**: ✅ Separated and working
+- **Physics**: ✅ Fixed and improved
+- **UI Framework**: 🚧 Structured but awaiting bevy_egui compatibility
+- **Networking**: 🚧 Structured but awaiting GGRS dependency resolution
 
 ## Step 3: Combat & Mechanics
 

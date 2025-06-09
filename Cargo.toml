@@ -4,12 +4,23 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.16", features = ["default"] }
-avian3d = "0.3"
-bevy_egui = "0.32"
-bevy_ggrs = "0.18"
-bevy_matchbox = "0.12"
+# Core Bevy and Physics
+bevy = { version = "0.16.0", features = ["dynamic_linking"] }
+avian3d = "0.3.1"
 
-# Additional useful dependencies
+# UI and Networking
+bevy_egui = "0.34.1"
+bevy_ggrs = "0.18.0"
+bevy_matchbox = "0.12.0"
+ggrs = "0.11.1"
+matchbox_socket = "0.12.0"
+
+# Serialization and Utilities
 serde = { version = "1.0", features = ["derive"] }
-rand = "0.8" 
+rand = "0.8"
+uuid = { version = "1.0", features = ["v4"] }
+log = "0.4"
+
+# Networking and async
+tokio = { version = "1.0", features = ["full"] }
+futures = "0.3" 

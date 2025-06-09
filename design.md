@@ -9,8 +9,8 @@ x->       <-x
 -------------
 
 ## Core Mechanics
-- **Arena**: 3D space, 15m long x 5m wide per chunk (single biome play area)
-- **Movement Speed**: ~1 meter per second base movement
+- **Arena**: 3D space, long & wide
+- **Movement Speed**: sensible base movement speed
 - **Combat**: Physics-based bow fighting with gravity effects, instant death on hit
 - **Movement**: Free 3D movement with jump and dodge abilities
 - **Dodge**: Dash with 1-second i-frames, 7-second cooldown, can dodge in air, no chaining

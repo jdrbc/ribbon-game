@@ -2,10 +2,28 @@ use bevy::prelude::*;
 use avian3d::prelude::*;
 use crate::components::*;
 use crate::resources::*;
+use crate::{GameState};
 
-const ARENA_LENGTH: f32 = 15.0;
-const ARENA_WIDTH: f32 = 5.0;
-const JUMP_IMPULSE: f32 = 8.0;
+const ARENA_LENGTH: f32 = 150.0;
+const ARENA_WIDTH: f32 = 50.0;
+
+pub struct GameSystemsPlugin;
+
+impl Plugin for GameSystemsPlugin {
+    fn build(&self, app: &mut App) {
+        app
+            .init_resource::<ArenaConfig>()
+            .init_resource::<GameStats>()
+            .add_systems(OnEnter(GameState::InGame), (
+                setup_scene,
+                setup_camera,
+                spawn_player,
+            ))
+            .add_systems(Update, (
+                camera_follow.run_if(in_state(GameState::InGame)),
+            ));
+    }
+}
 
 // Startup Systems
 pub fn setup_scene(
@@ -13,19 +31,25 @@ pub fn setup_scene(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    // Add arena config resource
-    commands.insert_resource(ArenaConfig::default());
-
-    // Create ground plane (15m x 5m arena)
-    commands.spawn((
+    // Create ground plane (150m x 50m arena) with separate visual and physics
+    let ground_parent = commands.spawn((
         Mesh3d(meshes.add(Plane3d::default().mesh().size(ARENA_LENGTH, ARENA_WIDTH))),
         MeshMaterial3d(materials.add(Color::srgb(0.3, 0.5, 0.3))),
-        Transform::from_xyz(0.0, 0.0, 0.0),
-        RigidBody::Static,
-        Collider::cuboid(ARENA_LENGTH, 0.1, ARENA_WIDTH),
+        Transform::from_xyz(0.0, 0.0, 0.0), // Visual plane at Y=0
         Ground,
         Arena,
-    ));
+    )).id();
+    
+    // Add physics collider as child, positioned so top surface aligns with visual plane
+    let collider_entity = commands.spawn((
+        Transform::from_xyz(0.0, -0.5, 0.0), // Position collider so top is at Y=0
+        RigidBody::Static,
+        Collider::cuboid(ARENA_LENGTH, 1.0, ARENA_WIDTH), // Thicker collider
+        Groundable,
+    )).id();
+    
+    // Set parent relationship
+    commands.entity(collider_entity).insert(ChildOf(ground_parent));
 
     // Add lighting
     commands.spawn((
@@ -67,61 +91,20 @@ pub fn spawn_player(
     commands.spawn((
         Mesh3d(meshes.add(Capsule3d::new(0.4, 1.8))),
         MeshMaterial3d(materials.add(Color::srgb(0.8, 0.2, 0.2))),
-        Transform::from_xyz(0.0, 1.0, 0.0),
+        Transform::from_xyz(0.0, 2.0, 0.0), // Start slightly above ground
         RigidBody::Dynamic,
         Collider::capsule(1.8, 0.4),
         LockedAxes::ROTATION_LOCKED, // Prevent player from falling over
         Player::default(),
+        // Add friction and restitution for better physics
+        Friction::new(1.0),
+        Restitution::new(0.1),
+        // Add external impulse component for movement
+        ExternalImpulse::default(),
+        // Network components
+        NetworkInput::default(),
+        LocalPlayer, // Mark as local player for now
     ));
-}
-
-// Update Systems
-pub fn update_ground_detection(
-    mut player_query: Query<(&mut Player, &Transform, &LinearVelocity)>,
-) {
-    for (mut player, transform, velocity) in player_query.iter_mut() {
-        // Simple ground detection - if player is close to ground and not moving up
-        player.is_grounded = transform.translation.y <= 1.1 && velocity.y <= 0.1;
-    }
-}
-
-pub fn player_movement(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player_query: Query<(&Player, &mut LinearVelocity, &Transform), With<Player>>,
-    time: Res<Time>,
-) {
-    for (player, mut velocity, transform) in player_query.iter_mut() {
-        let mut movement = Vec3::ZERO;
-        let speed = player.movement_speed;
-
-        // WASD movement
-        if keyboard_input.pressed(KeyCode::KeyW) {
-            movement.z -= 1.0;
-        }
-        if keyboard_input.pressed(KeyCode::KeyS) {
-            movement.z += 1.0;
-        }
-        if keyboard_input.pressed(KeyCode::KeyA) {
-            movement.x -= 1.0;
-        }
-        if keyboard_input.pressed(KeyCode::KeyD) {
-            movement.x += 1.0;
-        }
-
-        // Normalize movement to prevent faster diagonal movement
-        if movement.length() > 0.0 {
-            movement = movement.normalize();
-        }
-
-        // Apply movement to velocity (preserve Y for physics)
-        velocity.x = movement.x * speed;
-        velocity.z = movement.z * speed;
-
-        // Jump mechanics (Spacebar) - only if grounded
-        if keyboard_input.just_pressed(KeyCode::Space) && player.is_grounded {
-            velocity.y = JUMP_IMPULSE;
-        }
-    }
 }
 
 pub fn camera_follow(
@@ -144,39 +127,6 @@ pub fn camera_follow(
             // Always look at player position (slightly above for better view)
             let look_target = player_transform.translation + Vec3::new(0.0, 1.0, 0.0);
             camera_transform.look_at(look_target, Vec3::Y);
-        }
-    }
-}
-
-pub fn handle_boundaries(
-    mut player_query: Query<(&mut Transform, &mut LinearVelocity), With<Player>>,
-    arena_config: Res<ArenaConfig>,
-) {
-    for (mut transform, mut velocity) in player_query.iter_mut() {
-        let half_length = arena_config.length / 2.0;
-        let half_width = arena_config.width / 2.0;
-
-        // Check and clamp player position within arena boundaries
-        if transform.translation.x > half_length {
-            transform.translation.x = half_length;
-            velocity.x = 0.0;
-        } else if transform.translation.x < -half_length {
-            transform.translation.x = -half_length;
-            velocity.x = 0.0;
-        }
-
-        if transform.translation.z > half_width {
-            transform.translation.z = half_width;
-            velocity.z = 0.0;
-        } else if transform.translation.z < -half_width {
-            transform.translation.z = -half_width;
-            velocity.z = 0.0;
-        }
-
-        // Prevent falling below ground level
-        if transform.translation.y < 0.5 {
-            transform.translation.y = 0.5;
-            velocity.y = 0.0;
         }
     }
 } 
