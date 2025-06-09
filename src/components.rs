@@ -1,8 +1,7 @@
 use bevy::prelude::*;
-use avian3d::prelude::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Component, Debug, Clone, Serialize, Deserialize)]
+#[derive(Component, Debug, Clone, Serialize, Deserialize, Copy)]
 pub struct Player {
     pub id: u32,
     pub network_id: u32, // Simplified for now
@@ -49,7 +48,7 @@ pub struct LocalPlayer;
 pub struct RemotePlayer;
 
 // Network input component for GGRS
-#[derive(Component, Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Component, Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub struct NetworkInput {
     pub movement: Vec2,
     pub jump: bool,

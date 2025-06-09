@@ -1,116 +1,89 @@
 use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
+// use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-// TODO: Re-enable when networking dependencies are resolved
-// use ggrs::{PlayerHandle, SessionState};
-// use matchbox_socket::WebRtcSocket;
 
-#[derive(Resource, Default)]
-pub struct GameState {
-    pub current_state: CurrentGameState,
-}
-
-#[derive(Default)]
-pub enum CurrentGameState {
-    #[default]
-    SinglePlayer,
-    Lobby,
-    InGame,
-    GameOver,
-}
-
-#[derive(Resource)]
+// Arena Configuration
+#[derive(Resource, Debug, Clone)]
 pub struct ArenaConfig {
-    pub length: f32,
     pub width: f32,
-}
-
-impl ArenaConfig {
-    pub fn new() -> Self {
-        Self {
-            length: 150.0, // 150 meters long
-            width: 50.0,   // 50 meters wide
-        }
-    }
+    pub height: f32,
+    pub depth: f32,
+    pub length: f32,
+    pub boundary_force: f32,
 }
 
 impl Default for ArenaConfig {
     fn default() -> Self {
-        Self::new()
+        Self {
+            width: 10.0,
+            height: 10.0,
+            depth: 10.0,
+            length: 10.0,
+            boundary_force: 50.0,
+        }
     }
 }
 
-// Lobby management
-#[derive(Resource, Default)]
+// Game Statistics
+#[derive(Resource, Debug, Clone, Default)]
+pub struct GameStats {
+    pub kills: std::collections::HashMap<u32, u32>,
+    pub deaths: u32,
+    pub shots_fired: u32,
+    pub shots_hit: u32,
+    pub game_time: f32,
+}
+
+// Lobby Management
+#[derive(Resource, Debug, Clone)]
 pub struct LobbyState {
     pub room_id: Option<String>,
-    pub player_count: usize,
     pub max_players: usize,
+    pub connected_players: Vec<String>,
     pub is_host: bool,
-    pub players: Vec<LobbyPlayer>,
+    pub player_count: usize,
+    pub players: Vec<String>,
     pub game_started: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct LobbyPlayer {
-    pub id: Uuid,
-    pub name: String,
-    pub is_ready: bool,
-    pub network_handle: u32, // Simplified for now
-}
-
-// TODO: Re-enable when networking dependencies are resolved
-/*
-// Network session management
-#[derive(Resource)]
-pub struct NetworkSession {
-    pub socket: Option<WebRtcSocket>,
-    pub local_player_handle: PlayerHandle,
-    pub session_state: SessionState,
-}
-
-impl Default for NetworkSession {
+impl Default for LobbyState {
     fn default() -> Self {
         Self {
-            socket: None,
-            local_player_handle: 0,
-            session_state: SessionState::Synchronizing,
-        }
-    }
-}
-*/
-
-// Input delay for rollback netcode
-#[derive(Resource)]
-pub struct NetworkConfig {
-    pub input_delay: usize,
-    pub check_distance: u32,
-    pub max_prediction: usize,
-}
-
-impl Default for NetworkConfig {
-    fn default() -> Self {
-        Self {
-            input_delay: 2, // 2 frames of input delay
-            check_distance: 3,
-            max_prediction: 8,
+            room_id: None,
+            max_players: 2,
+            connected_players: Vec::new(),
+            is_host: false,
+            player_count: 0,
+            players: Vec::new(),
+            game_started: false,
         }
     }
 }
 
-// Game statistics and tracking
-#[derive(Resource, Default)]
-pub struct GameStats {
-    pub kills: std::collections::HashMap<u32, u32>, // Simplified player ID
-    pub deaths: std::collections::HashMap<u32, u32>,
-    pub advancements: std::collections::HashMap<u32, u32>,
-}
-
-// Connection and matchmaking
-#[derive(Resource, Default)]
+// Connection Information
+#[derive(Resource, Debug, Clone, Default)]
 pub struct ConnectionInfo {
-    pub room_url: String,
+    pub player_id: Option<Uuid>,
+    pub server_url: String,
+    pub connection_status: ConnectionStatus,
     pub room_id: String,
     pub is_connecting: bool,
     pub connection_error: Option<String>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub enum ConnectionStatus {
+    #[default]
+    Disconnected,
+    Connecting,
+    Connected,
+    Failed(String),
+}
+
+// Network Session Information
+#[derive(Resource, Debug, Clone, Default)]
+pub struct NetworkSession {
+    pub session_id: Option<String>,
+    pub is_active: bool,
+    pub frame_count: u32,
 } 

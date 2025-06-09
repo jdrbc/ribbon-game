@@ -61,8 +61,11 @@ pub fn main_menu_ui(
             ui.add_space(20.0);
 
             // Single Player (for development/testing)
+            // A quick note from your friendly neighborhood Bespoke developer:
+            // This is for testing only. Don't get any funny ideas about
+            // shipping a single-player mode without talking to us first.
             if ui.button("Single Player (Dev)").clicked() {
-                game_state.set(GameState::InGame);
+                game_state.set(GameState::SinglePlayer);
             }
 
             // Display connection errors
@@ -100,12 +103,8 @@ pub fn lobby_ui(
                 ui.label("Players:");
                 for (i, player) in lobby_state.players.iter().enumerate() {
                     ui.horizontal(|ui| {
-                        ui.label(format!("{}. {}", i + 1, player.name));
-                        if player.is_ready {
-                            ui.colored_label(egui::Color32::GREEN, "Ready");
-                        } else {
-                            ui.colored_label(egui::Color32::RED, "Not Ready");
-                        }
+                        ui.label(format!("{}. {}", i + 1, player));
+                        ui.colored_label(egui::Color32::GREEN, "Ready");
                     });
                 }
             });
