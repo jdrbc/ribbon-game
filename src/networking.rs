@@ -95,7 +95,7 @@ pub fn wait_for_players(
     mut commands: Commands,
     mut socket: ResMut<MatchboxSocket>,
     mut game_state: ResMut<NextState<GameState>>,
-    lobby_state: Res<LobbyState>,
+    mut lobby_state: ResMut<LobbyState>,
 ) {
     if socket.get_channel(0).is_err() {
         return; // We are not ready yet
@@ -104,12 +104,28 @@ pub fn wait_for_players(
     // Check for new connections
     socket.update_peers();
     let players = socket.connected_peers().collect::<Vec<_>>();
-
-    if players.len() < lobby_state.max_players {
-        return; // not enough players yet
+    
+    // Update lobby state with current player count
+    let current_player_count = players.len() + 1; // +1 for the local player
+    lobby_state.player_count = current_player_count;
+    lobby_state.connected_players = players.iter().map(|p| format!("Player_{}", p)).collect();
+    
+    // Update the players list that the UI displays
+    lobby_state.players.clear();
+    lobby_state.players.push("Host".to_string()); // Add the host/local player
+    for (i, _player) in players.iter().enumerate() {
+        lobby_state.players.push(format!("Player_{}", i + 2)); // Start from Player_2
     }
 
-    info!("All players connected, starting GGRS session.");
+    info!("Players connected: {}/{}", current_player_count, lobby_state.max_players);
+
+    if players.len() < lobby_state.max_players - 1 {
+        return; // not enough players yet (-1 because we count the local player)
+    }
+    
+    // Auto-start when we have enough players (simplified for now)
+    // TODO: Later we can add proper ready-state synchronization via GGRS
+    info!("All players connected, auto-starting GGRS session.");
 
     let mut session_builder = SessionBuilder::<GGRSConfig>::new()
         .with_num_players(lobby_state.max_players)

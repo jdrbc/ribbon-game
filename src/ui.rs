@@ -113,16 +113,17 @@ pub fn lobby_ui(
 
             // Host controls
             if lobby_state.is_host {
-                if ui.button("Start Game").clicked() && lobby_state.player_count >= 2 {
-                    lobby_state.game_started = true;
-                    game_state.set(GameState::InGame);
-                }
-                
-                if lobby_state.player_count < 2 {
+                if lobby_state.player_count >= 2 {
+                    ui.colored_label(egui::Color32::GREEN, "Ready! Game will start automatically...");
+                } else {
                     ui.colored_label(egui::Color32::GRAY, "Need at least 2 players to start");
                 }
             } else {
-                ui.label("Waiting for host to start the game...");
+                if lobby_state.player_count >= 2 {
+                    ui.colored_label(egui::Color32::GREEN, "Ready! Game will start automatically...");
+                } else {
+                    ui.label("Waiting for more players...");
+                }
             }
 
             ui.add_space(20.0);
