@@ -9,45 +9,65 @@ x->       <-x
 -------------
 
 ## Core Mechanics
-- **Arena**: 3D space, single lane (long and narrow to promote conflict)
-- **Chunk Size**: 15 seconds running time end-to-end per chunk
-- **Combat**: Physics-based bow fighting, instant death on hit
-- **Movement**: Free movement with jump and dodge abilities
-- **Dodge**: Dash with i-frames, can dodge in air
-- **Advancement**: Players advance toward opponent's side. If opponent falls too far behind, they respawn in front of advancing player
-- **Respawn Logic**: Distance threshold triggers respawn 20 meters in front of advancing player
-- **Win Condition**: When player advances off edge of opponent's side, they choose new biome to add to map. Battle restarts from middle. **Game ends when a player falls off 5 times total.**
-- **Biome System**: Start with forest biome only (TODO: add biome variety and player choice)
+- **Arena**: 3D space, 15m long x 5m wide per chunk (single biome play area)
+- **Movement Speed**: ~1 meter per second base movement
+- **Combat**: Physics-based bow fighting with gravity effects, instant death on hit
+- **Movement**: Free 3D movement with jump and dodge abilities
+- **Dodge**: Dash with 1-second i-frames, 7-second cooldown, can dodge in air, no chaining
+- **Advancement**: Players advance toward opponent's side. No advancement allowed until at least one kill occurs. Only the player who last killed their opponent can advance.
+- **Respawn Logic**: 20m distance threshold triggers respawn in front of advancing player. No spawn protection.
+- **Win Condition**: First player to advance off opponent's east/west edge 5 times wins. Falling off north/south edges counts as death, not advancement.
+- **Biome System**: Start with forest biome only. Winner chooses new biome when advancing.
 
 ## Technical Specs
-- **Rendering**: 3D with 3rd person camera (Risk of Rain style) - **Each player runs their own client**
-- **Networking**: **GGRS + Matchbox** - P2P with rollback netcode, desktop-only
-- **Network Authority**: Authoritative Replication (AR) with turn-based authority - shooter owns their arrows
-- **Prediction**: Client prediction for movement, server validation for hits (simplest approach)
-- **Physics**: Avian 3D for projectile physics and player movement
-- **Engine**: Bevy 0.16 + egui
+- **Rendering**: 3D with fixed 3rd person camera behind player - **Each player runs their own client**
+- **Networking**: **GGRS + Matchbox** - P2P with rollback netcode, 30 ticks/second
+- **Network Authority**: Host-based authority where needed, owner-based for arrow hit detection
+- **Prediction**: Client prediction for movement, network packets for arrow trajectory synchronization
+- **Physics**: Avian 3D for projectile physics and player movement with character controller
+- **Engine**: Bevy 0.16 + bevy-egui for UI
+- **Platform**: Mac and Windows desktop
 - **Map System**: Persistent biome generation - map grows and stays, previous biomes remain
 - **State Management**: Player components for individual state, central GameState for match tracking
+- **Error Handling**: Comprehensive logging for network disconnections, desyncs, and crashes
 
 ## Combat Details
-- **Bow**: Single arrow type, quick reload, no catching/deflecting arrows
+- **Bow**: Single arrow type, 1-second reload time, no catching/deflecting arrows
+- **Shooting**: Can shoot while moving, jumping, or dodging. Hold mouse button for power shot (affects range)
+- **Arrow Physics**: Realistic gravity drop-off and arc trajectory
 - **Health**: Instant death on arrow hit
-- **Dodge**: Dash with invincibility frames, usable in air
+- **Dodge**: Dash with 1-second invincibility frames, 7-second cooldown, usable in air, no chaining
+
+## Controls
+- **Movement**: WASD for directional movement
+- **Jump**: Spacebar
+- **Dodge**: Shift key
+- **Aim/Shoot**: Mouse aim, click to shoot, hold for power shot
 
 ## Development Roadmap
 **Step 1: Core Movement**
-- 3D rendering of player box on plane
+- 3D rendering of player box on plane with Avian 3D character controller
 - WASD movement controls for single player
+- Fixed 3rd person camera implementation
 
-**Step 2: Multiplayer**
-- P2P networking implementation
-- Synchronized player movement between clients
+**Step 2: Multiplayer Foundation**
+- EGUI lobby system (create/join/start game, list members)
+- P2P networking with GGRS + Matchbox implementation
+- Synchronized player movement testing between clients
 
 **Step 3: Combat & Mechanics**  
-- Bow mechanics + instant death system
-- Dodge system with i-frames
-- Biome generation system + win condition tracking (5x)
+- Bow mechanics with 1-second reload and power shot system
+- Arrow physics with gravity and trajectory
+- Instant death + dodge system with i-frames and cooldown
+- Win condition tracking (first to 5 advancements)
+
+**Step 4: Game Flow**
+- Respawn logic with 20m threshold
+- Advancement rules (kill requirement, east/west boundaries) 
+- Biome generation system
 
 **Future:**
+- Audio system integration
+- Advanced biome variety and selection
 - Infinite minecraft crafting -> place bits in a grid -> create unique items / creatures
 

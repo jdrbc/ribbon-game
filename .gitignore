@@ -1,0 +1,29 @@
+# Rust
+/target/
+Cargo.lock
+
+# Bevy
+/assets/imported_assets/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Game saves and configs
+saves/
+config/
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib 
