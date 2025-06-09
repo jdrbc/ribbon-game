@@ -11,7 +11,7 @@ avian3d = "0.3.1"
 # UI and Networking
 bevy_egui = "0.34.1"
 bevy_ggrs = "0.18.0"
-bevy_matchbox = "0.12.0"
+bevy_matchbox = { version = "0.12.0", features = ["ggrs"] }
 
 # Serialization and Utilities
 serde = { version = "1.0", features = ["derive"] }

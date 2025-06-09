@@ -2,7 +2,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy_ggrs::{
     ggrs::{Config, SessionBuilder, PlayerType},
-    GgrsApp, GgrsPlugin, GgrsSchedule, LocalPlayers, PlayerInputs, RollbackApp,
+    GgrsApp, GgrsPlugin, GgrsSchedule, LocalPlayers, PlayerInputs, RollbackApp, Session,
 };
 use bevy_matchbox::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -57,7 +57,8 @@ impl Plugin for NetworkingPlugin {
             // Systems that run in the lobby, waiting for players to join
             .add_systems(Update, wait_for_players.run_if(in_state(GameState::Lobby)))
             // GGRS will read player inputs from this system
-            // .add_systems(bevy_ggrs::ReadInputs, (read_local_inputs,))
+            // TODO: Fix input system - temporarily disabled for testing
+            // .add_systems(bevy_ggrs::ReadInputs, read_local_inputs)
             // These systems are the core of our networked gameplay
             .add_systems(
                 GgrsSchedule,
@@ -80,7 +81,7 @@ impl Plugin for NetworkingPlugin {
 // dependency lists.
 pub fn start_matchbox_socket(mut commands: Commands, lobby_state: Res<LobbyState>) {
     let room_id = lobby_state.room_id.as_ref().unwrap();
-    let room_url = format!("ws://127.0.0.1:3536/{}", room_id);
+    let room_url = format!("ws://44.206.226.40:3536/{}", room_id);
     info!("Connecting to Matchbox server: {}", room_url);
     commands.insert_resource(MatchboxSocket::new_reliable(&room_url));
 }
@@ -91,7 +92,7 @@ pub fn start_matchbox_socket(mut commands: Commands, lobby_state: Res<LobbyState
 // This system just waits for players to connect. Once everyone is here,
 // it will trigger the start of the GGRS session. No more, no less.
 pub fn wait_for_players(
-    _commands: Commands,
+    mut commands: Commands,
     mut socket: ResMut<MatchboxSocket>,
     mut game_state: ResMut<NextState<GameState>>,
     lobby_state: Res<LobbyState>,
@@ -120,12 +121,12 @@ pub fn wait_for_players(
             .expect("failed to add player");
     }
 
-    // TODO: Fix matchbox integration with GGRS
-    // let channel = socket.take_channel(0).unwrap();
-    // let ggrs_session = session_builder
-    //     .start_p2p_session(channel)
-    //     .expect("failed to start session");
-    // commands.insert_resource(Session::P2P(ggrs_session));
+    // Create GGRS session and start the networked game
+    let channel = socket.take_channel(0).unwrap();
+    let ggrs_session = session_builder
+        .start_p2p_session(channel)
+        .expect("failed to start session");
+    commands.insert_resource(Session::P2P(ggrs_session));
 
     game_state.set(GameState::InGame);
 }

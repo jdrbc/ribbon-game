@@ -2,7 +2,8 @@ use bevy::prelude::*;
 use avian3d::prelude::*;
 use crate::components::*;
 use crate::{GameState};
-use bevy_ggrs::ggrs::PlayerHandle;
+// Temporarily commented out GGRS imports
+// use bevy_ggrs::{ggrs::PlayerHandle, LocalInputs, LocalPlayers};
 
 pub struct InputPlugin;
 
@@ -53,35 +54,16 @@ pub fn gather_input(
 
 // This is for GGRS. It reads the local player's input and returns it
 // for GGRS to handle. This is the real deal for multiplayer.
+// TODO: Implement proper GGRS input system
+/*
 pub fn read_local_inputs(
+    mut commands: Commands,
     keys: Res<ButtonInput<KeyCode>>,
-    _handle: In<PlayerHandle>,
-) -> NetworkInput {
-    let mut movement = Vec2::ZERO;
-
-    if keys.pressed(KeyCode::KeyW) {
-        movement.y += 1.0;
-    }
-    if keys.pressed(KeyCode::KeyS) {
-        movement.y -= 1.0;
-    }
-    if keys.pressed(KeyCode::KeyA) {
-        movement.x -= 1.0;
-    }
-    if keys.pressed(KeyCode::KeyD) {
-        movement.x += 1.0;
-    }
-
-    if movement.length() > 0.0 {
-        movement = movement.normalize();
-    }
-
-    NetworkInput {
-        movement,
-        jump: keys.just_pressed(KeyCode::Space),
-        shoot: keys.just_pressed(KeyCode::ArrowUp) || keys.pressed(KeyCode::ArrowUp),
-    }
+    local_players: Res<bevy_ggrs::LocalPlayers>,
+) {
+    // Implementation will be added later when GGRS input system is fixed
 }
+*/
 
 // This processes the local input for the single-player mode. It directly
 // applies forces to the player character. In multiplayer, the server-side
